@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mongo-db
+  name: mongo-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-db
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mongo-db
+    spec:
+      containers:
+      - image: mongo
+        name: mongo
+        args: ["--dbpath","/data/db"]
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-db-secret
+              key: Mongo_DB_USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-db-secret
+              key: Mongo_DB_PASSWORD
+        volumeMounts:
+        - name: "mongo-data"
+          mountPath: "/data/db"
+        ports:
+          - containerPort: 27017
+      volumes:
+      - name: "mongo-data"
+        persistentVolumeClaim:
+          claimName: "mongo-db-pv-claim"
